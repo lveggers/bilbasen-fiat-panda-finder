@@ -1,4 +1,6 @@
-# Bilbasen Fiat Panda Finder - Development Log
+# Bilbasen Fiat Panda Finder - Project Context & Changelog
+
+This document tracks the development history, current status, and maintains a changelog of all completed features for the Bilbasen Fiat Panda Finder project.
 
 ## Project Overview
 This conversation documents the development of a comprehensive Python project that scrapes Bilbasen.dk for Fiat Panda listings, scores them based on multiple criteria, and serves a dark-themed web dashboard.
@@ -32,6 +34,113 @@ Based on the prompt from `claude_code_bilbasen_prompt.md`, the project requireme
 - **Condition**: Map text to [0..1]; unknown → 0.5
 - **Weights**: Price (0.4), Year (0.25), Km (0.25), Condition (0.1)
 - Final score = `round(100 * weighted_blend)`
+
+## Development History
+
+### Key Milestones & Pull Requests
+
+#### PR #11 - Fix Scraper Issues and Add Design Inspiration (2025-08-10)
+**Status**: ✅ Merged  
+**Issue**: Scraper finding wrong results, scoring not working, results not stored  
+**Solution**: Complete scraper overhaul with JSON-based extraction
+
+**Key Changes**:
+- Fixed scraper URL to target Fiat Panda specifically
+- Implemented JSON-based data extraction from Next.js `__NEXT_DATA__`
+- Added `scipy` dependency for scoring algorithm winsorization
+- Fixed API imports and model score fields
+- Created comprehensive debug workflow and scripts
+- Added design inspiration folder structure
+
+**Results**: Successfully scrapes 30 real Fiat Panda listings with scores 45-70 (avg 56.4)
+
+---
+
+#### PR #13 - Modern Dark Dashboard Design (2025-08-10)
+**Status**: 🔄 Pending Review  
+**Issue**: #12 - Update dashboard design to match modern dark theme inspiration  
+**Solution**: Complete UI/UX redesign with professional analytics styling
+
+**Key Changes**:
+- Deep navy gradient background with purple/violet accents
+- Glass morphism effects with backdrop blur throughout
+- Enhanced metric cards with gradients, animations, and status indicators  
+- Modern chart styling with dark theme Plotly configurations
+- Interactive elements with smooth transitions and hover effects
+- Professional action buttons with gradient designs and icons
+- Redesigned table with ranking badges and score visualizations
+
+**Technical**: Extended Tailwind config, updated base template, enhanced chart configurations
+
+---
+
+## Change Log
+
+### [Unreleased]
+#### Added
+- Workflow documentation requiring application demo before PR approval
+- Project context changelog system
+- Post-merge cleanup process with changelog updates
+
+### [v0.2.0] - 2025-08-10
+#### Added
+- Modern dark dashboard design with navy theme and purple accents
+- Glass morphism effects and backdrop blur styling
+- Enhanced metric cards with gradients and status indicators
+- Interactive charts with improved dark theme styling
+- Professional table design with ranking badges
+- Design inspiration folder with reference materials
+
+#### Fixed  
+- Scraper now correctly targets Fiat Panda listings (was finding Peugeot)
+- JSON-based extraction replaces unreliable CSS selectors
+- Scoring algorithm properly processes all 30 listings
+- Real current data replaces test data in dashboard
+- API endpoints return accurate score statistics
+
+#### Changed
+- Scraper URL updated to specific Fiat Panda endpoint
+- Data extraction method switched from DOM parsing to JSON parsing
+- Added scipy dependency for statistical functions
+- Enhanced debug workflow with comprehensive test scripts
+
+### [v0.1.0] - Initial Release
+#### Added
+- Core scraping functionality with Playwright
+- Scoring algorithm with winsorization
+- FastAPI web server with REST endpoints
+- Dark-themed dashboard with basic styling
+- Database models and CRUD operations
+- Danish condition text analysis
+- Comprehensive test suite setup
+- CI/CD pipeline configuration
+
+---
+
+## Current Status
+
+### ✅ Completed Features
+- Configuration and logging system
+- Database models and CRUD operations  
+- Danish condition text parsing with fuzzy matching
+- Playwright scraper with rate limiting and JSON extraction
+- Advanced scoring algorithm with winsorization
+- FastAPI REST API with comprehensive endpoints
+- Modern dark dashboard with analytics styling
+- Real-time data visualization with Plotly charts
+- Interactive web interface with responsive design
+- Debug workflow and testing scripts
+
+### 🔄 In Progress
+- PR #13: Modern dashboard design (pending review)
+
+### 📋 Planned Features
+- Comprehensive testing suite with pytest
+- CI/CD pipeline with GitHub Actions
+- Enhanced documentation and README
+- Multi-brand support beyond Fiat Panda
+- Email alerts for great deals
+- Price tracking and historical analysis
 
 ## Progress Log
 

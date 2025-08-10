@@ -77,9 +77,21 @@ Brief description of what this PR implements.
 
 ### 4. Review Process
 
-1. **Wait for Review**: After creating PR, stop work and wait for approval
-2. **Address Feedback**: Make requested changes in the same feature branch
-3. **Merge After Approval**: Only continue after PR is approved and merged
+1. **Create Pull Request**: After pushing changes, create PR with detailed description
+2. **Demo Application**: **CRITICAL** - Before approval, always spin up the application for live review
+   ```bash
+   # Start the application server
+   poetry run uvicorn src.app.server:app --host 127.0.0.1 --port 8001
+   
+   # Verify application is working with real data
+   curl "http://127.0.0.1:8001/api/v1/scores"
+   
+   # Provide access URL for review
+   echo "Application ready at: http://127.0.0.1:8001"
+   ```
+3. **Wait for Review**: Stop work and wait for approval after demonstrating functionality
+4. **Address Feedback**: Make requested changes in the same feature branch if needed
+5. **Merge After Approval**: Only continue after PR is approved and merged
 
 ### 5. Post-Merge Cleanup
 
@@ -87,7 +99,18 @@ After PR is approved and merged:
 1. Switch back to master: `git checkout master`
 2. Pull latest changes: `git pull origin master`
 3. Delete feature branch: `git branch -d feature/branch-name`
-4. Continue with next feature
+4. **Update Project Context**: Update the changelog in `project_context.md` with the completed feature
+   ```bash
+   # Add entry to changelog reflecting the merged PR:
+   # 1. Move PR from "Pending Review" to "Merged" in Key Milestones section
+   # 2. Add new version entry in Change Log with:
+   #    - Version number (semantic versioning)
+   #    - Release date
+   #    - Added/Fixed/Changed sections with bullet points
+   #    - Reference to closed GitHub issues
+   # 3. Update Current Status section if needed
+   ```
+5. Continue with next feature
 
 ## Current Project Status
 
