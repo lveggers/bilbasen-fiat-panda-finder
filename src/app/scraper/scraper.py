@@ -12,6 +12,7 @@ from ..models import ListingCreate
 from ..parse_condition import parse_condition
 from .playwright_client import get_playwright_client
 from .selectors import get_selector, get_pattern, URL_PATTERNS
+from .json_extractor import BilbasenJSONExtractor
 
 logger = get_logger("scraper")
 
@@ -40,6 +41,7 @@ class BilbasenScraper:
     def __init__(self):
         self.search_url = settings.get_search_url()
         self.base_url = settings.base_url
+        self.json_extractor = BilbasenJSONExtractor()
         
     async def scrape_search_results(self, max_pages: int = 5) -> List[ScrapedListing]:
         """
@@ -222,6 +224,68 @@ class BilbasenScraper:
                 listings.append(listing)
         
         return listings
+    
+    async def scrape_search_results_json(self, max_pages: int = 5) -> List[ListingCreate]:
+        """
+        Scrape search results from Bilbasen using JSON extraction.
+        
+        Args:
+            max_pages: Maximum number of pages to scrape
+            
+        Returns:
+            List of normalized listings ready for database
+        """
+        logger.info(f"Starting JSON-based scrape of Bilbasen search results")
+        all_listings = []
+        
+        async with get_playwright_client() as client:
+            for page_num in range(1, max_pages + 1):
+                try:
+                    # Construct page URL
+                    page_url = f"{self.search_url}&page={page_num}" if page_num > 1 else self.search_url
+                    
+                    logger.info(f"Scraping page {page_num}: {page_url}")
+                    
+                    # Get page content
+                    page, content = await client.get_page_with_retry(
+                        page_url,
+                        wait_for_selector=get_selector("search", "listings_container")
+                    )
+                    
+                    try:
+                        # Extract listings from JSON data
+                        normalized_listings = self.json_extractor.extract_listings_from_html(content)
+                        
+                        if not normalized_listings:
+                            logger.warning(f"No listings found on page {page_num}")
+                            if page_num == 1:
+                                logger.info("No results found for search term")
+                                break
+                            else:
+                                logger.info(f"Reached end of results at page {page_num}")
+                                break
+                        
+                        logger.info(f"Found {len(normalized_listings)} listings on page {page_num}")
+                        
+                        # Convert to ListingCreate models
+                        listing_models = self.json_extractor.create_listing_models(normalized_listings)
+                        all_listings.extend(listing_models)
+                        
+                        # Check if there are more pages by looking for next page button
+                        next_page_link = await page.query_selector(get_selector("search", "pagination_next"))
+                        if not next_page_link:
+                            logger.info(f"No more pages after page {page_num}")
+                            break
+                            
+                    finally:
+                        await page.close()
+                        
+                except Exception as e:
+                    logger.error(f"Error scraping page {page_num}: {e}")
+                    continue
+        
+        logger.info(f"JSON-based scraping completed: {len(all_listings)} normalized listings")
+        return all_listings
     
     async def scrape_listing_details(self, scraped_listing: ScrapedListing) -> ScrapedListing:
         """
@@ -472,18 +536,29 @@ class BilbasenScraper:
         
         return normalized if normalized else None
     
-    async def scrape_full_listings(self, max_pages: int = 5, include_details: bool = True) -> List[ListingCreate]:
+    async def scrape_full_listings(self, max_pages: int = 5, use_json: bool = True) -> List[ListingCreate]:
         """
         Complete scraping workflow.
         
         Args:
             max_pages: Maximum number of search result pages to scrape
-            include_details: Whether to scrape individual listing details
+            use_json: Whether to use JSON extraction (recommended) or DOM scraping
             
         Returns:
             List of normalized listings ready for database
         """
-        logger.info(f"Starting full scraping workflow (max_pages={max_pages}, include_details={include_details})")
+        logger.info(f"Starting full scraping workflow (max_pages={max_pages}, use_json={use_json})")
+        
+        if use_json:
+            # Use the new JSON-based approach (faster and more reliable)
+            return await self.scrape_search_results_json(max_pages)
+        else:
+            # Use the legacy DOM-based approach
+            return await self._scrape_full_listings_legacy(max_pages)
+    
+    async def _scrape_full_listings_legacy(self, max_pages: int = 5) -> List[ListingCreate]:
+        """Legacy DOM-based scraping workflow (kept for compatibility)."""
+        logger.info("Using legacy DOM-based scraping")
         
         # Step 1: Scrape search results
         scraped_listings = await self.scrape_search_results(max_pages)
@@ -492,27 +567,26 @@ class BilbasenScraper:
             logger.warning("No listings found in search results")
             return []
         
-        # Step 2: Optionally scrape individual listing details
-        if include_details:
-            logger.info(f"Scraping details for {len(scraped_listings)} listings")
-            
-            detailed_listings = []
-            for i, listing in enumerate(scraped_listings):
-                try:
-                    logger.info(f"Processing listing {i+1}/{len(scraped_listings)}")
-                    detailed_listing = await self.scrape_listing_details(listing)
-                    detailed_listings.append(detailed_listing)
+        # Step 2: Scrape individual listing details
+        logger.info(f"Scraping details for {len(scraped_listings)} listings")
+        
+        detailed_listings = []
+        for i, listing in enumerate(scraped_listings):
+            try:
+                logger.info(f"Processing listing {i+1}/{len(scraped_listings)}")
+                detailed_listing = await self.scrape_listing_details(listing)
+                detailed_listings.append(detailed_listing)
+                
+                # Progress logging
+                if (i + 1) % 10 == 0:
+                    logger.info(f"Completed {i+1}/{len(scraped_listings)} listings")
                     
-                    # Progress logging
-                    if (i + 1) % 10 == 0:
-                        logger.info(f"Completed {i+1}/{len(scraped_listings)} listings")
-                        
-                except Exception as e:
-                    logger.error(f"Failed to scrape details for listing {i+1}: {e}")
-                    # Keep the original listing without details
-                    detailed_listings.append(listing)
-            
-            scraped_listings = detailed_listings
+            except Exception as e:
+                logger.error(f"Failed to scrape details for listing {i+1}: {e}")
+                # Keep the original listing without details
+                detailed_listings.append(listing)
+        
+        scraped_listings = detailed_listings
         
         # Step 3: Normalize all data
         logger.info("Normalizing scraped data")
@@ -525,21 +599,21 @@ class BilbasenScraper:
             except Exception as e:
                 logger.error(f"Failed to normalize listing {listing.url}: {e}")
         
-        logger.info(f"Scraping completed: {len(normalized_listings)} normalized listings")
+        logger.info(f"Legacy scraping completed: {len(normalized_listings)} normalized listings")
         return normalized_listings
 
 
 # Convenience function
-async def scrape_bilbasen_listings(max_pages: int = 3, include_details: bool = True) -> List[ListingCreate]:
+async def scrape_bilbasen_listings(max_pages: int = 3, use_json: bool = True) -> List[ListingCreate]:
     """
     Convenience function to scrape Bilbasen listings.
     
     Args:
         max_pages: Maximum number of search result pages to scrape
-        include_details: Whether to scrape individual listing details
+        use_json: Whether to use JSON extraction (recommended) or DOM scraping
         
     Returns:
         List of normalized listings ready for database
     """
     scraper = BilbasenScraper()
-    return await scraper.scrape_full_listings(max_pages, include_details)
+    return await scraper.scrape_full_listings(max_pages, use_json)

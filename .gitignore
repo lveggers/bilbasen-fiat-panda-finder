@@ -81,5 +81,8 @@ ENV/
 env/
 .venv/
 
+# Debug folder
+debug/
+
 # Fixtures (optional - keep for tests)
 # src/app/scraper/fixtures/*.html

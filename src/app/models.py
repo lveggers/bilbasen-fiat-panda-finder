@@ -54,6 +54,7 @@ class ListingCreate(SQLModel):
     kilometers: Optional[int] = None
     condition_str: Optional[str] = None
     condition_score: Optional[float] = None
+    score: Optional[int] = None
     brand: Optional[str] = None
     model: Optional[str] = None
     fuel_type: Optional[str] = None
@@ -61,6 +62,11 @@ class ListingCreate(SQLModel):
     body_type: Optional[str] = None
     location: Optional[str] = None
     dealer_name: Optional[str] = None
+    
+    # Scoring intermediate values (for debugging)
+    price_score: Optional[float] = None
+    year_score: Optional[float] = None
+    kilometers_score: Optional[float] = None
 
 
 class ListingUpdate(SQLModel):

@@ -10,7 +10,7 @@ from .config import settings
 from .db import get_session, ListingCRUD, create_db_and_tables
 from .models import ListingRead, ListingCreate, ScoreDistribution
 from .scraper.scraper import scrape_bilbasen_listings
-from .scoring import score_listings_dataframe, get_score_breakdown
+from .scoring import score_listings_dataframe
 from .logging_conf import get_logger, setup_logging
 
 # Setup logging
@@ -196,7 +196,22 @@ async def get_detailed_score_breakdown(
             })
         
         df = pd.DataFrame(data)
-        breakdown = get_score_breakdown(df)
+        
+        # Calculate basic statistics
+        breakdown = {
+            "total_listings": len(df),
+            "score_stats": {
+                "min": df['score'].min() if not df.empty else 0,
+                "max": df['score'].max() if not df.empty else 0,
+                "mean": df['score'].mean() if not df.empty else 0,
+                "median": df['score'].median() if not df.empty else 0
+            },
+            "price_stats": {
+                "min": df['price_dkk'].min() if not df.empty else 0,
+                "max": df['price_dkk'].max() if not df.empty else 0,
+                "mean": df['price_dkk'].mean() if not df.empty else 0
+            }
+        }
         
         logger.info("Generated detailed score breakdown")
         return breakdown

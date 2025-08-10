@@ -6,15 +6,15 @@ from typing import Dict, Any
 SELECTORS = {
     # Search results page
     "search": {
-        "listings_container": "div[data-testid='search-results']",
-        "listing_items": "div[data-testid='listing-item'], div.bb-listing-clickable",
-        "listing_link": "a[href*='/brugt/bil/']",
-        "listing_title": "h3, .bb-listing-headline",
-        "listing_price": ".bb-listing-price, [data-testid='price']",
-        "listing_year": ".bb-listing-year, [data-testid='year']",
-        "listing_kilometers": ".bb-listing-km, [data-testid='mileage']",
-        "listing_location": ".bb-listing-location, [data-testid='location']",
-        "pagination_next": "a[aria-label='Næste'], .pagination-next",
+        "listings_container": "section.srp_results__2UEV_",
+        "listing_items": "article.Listing_listing__XwaYe",
+        "listing_link": "a.Listing_link__6Z504",
+        "listing_title": ".Listing_title__qH4Gv, h3, .bb-listing-headline",
+        "listing_price": ".Listing_price__q15mE, .bb-listing-price, [data-testid='price']",
+        "listing_year": ".Listing_year__dBuOe, .bb-listing-year, [data-testid='year']",
+        "listing_kilometers": ".Listing_km__Kd7o4, .bb-listing-km, [data-testid='mileage']",
+        "listing_location": ".Listing_location__KjqBZ, .bb-listing-location, [data-testid='location']",
+        "pagination_next": "button[aria-label='Næste'], a[aria-label='Næste'], .pagination-next",
         "no_results": ".no-results, .empty-state",
     },
     

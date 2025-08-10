@@ -143,3 +143,52 @@ Closes #issue-number
 6. **Repeat**: Continue with next feature
 
 This workflow ensures code quality, traceability, and proper collaboration through the review process.
+
+## Debug Workflow
+
+### Debug Folder Structure
+
+All debugging and testing scripts are located in the `debug/` folder:
+
+- `debug/test_scraper.py` - Test original CSS-based scraper
+- `debug/test_json_scraper.py` - Test new JSON-based scraper  
+- `debug/test_end_to_end.py` - Complete end-to-end system test
+
+### Running Debug Tests
+
+To test the complete system functionality:
+
+```bash
+# Test JSON-based scraper (recommended)
+python debug/test_json_scraper.py
+
+# Test complete workflow: scraping -> scoring -> storage
+python debug/test_end_to_end.py
+```
+
+### Key Improvements Made
+
+1. **Fixed Scraper Issues**:
+   - Updated search URL to use correct Fiat Panda endpoint
+   - Created JSON-based extractor for modern Bilbasen structure
+   - Added fallback CSS selectors for compatibility
+
+2. **Enhanced Data Extraction**:
+   - Extracts data from Next.js `__NEXT_DATA__` JSON structure
+   - Properly parses price, year, kilometers, location, etc.
+   - Added condition scoring based on description analysis
+
+3. **Improved Workflow**:
+   - JSON extraction is faster and more reliable than DOM parsing
+   - Added comprehensive error handling and logging
+   - Created modular components for easier testing
+
+### Troubleshooting
+
+If scraping fails:
+1. Check if Bilbasen has updated their structure
+2. Review saved fixtures in `src/app/scraper/fixtures/`
+3. Use debug scripts to isolate issues
+4. Update CSS selectors in `selectors.py` if needed
+
+The debug folder is automatically ignored by git to prevent clutter.
