@@ -19,8 +19,8 @@ class Settings(BaseSettings):
     search_term: str = Field(default="Fiat Panda", description="Car model to search for")
     base_url: str = Field(default="https://www.bilbasen.dk", description="Base URL for Bilbasen")
     search_url: str = Field(
-        default="https://www.bilbasen.dk/brugt/bil?HstFobrDt=&YearFrom=&YearTo=&PriceFrom=&PriceTo=&KmFrom=&KmTo=&FreeTxt={search_term}&SortBy=BestMatch",
-        description="Search URL template"
+        default="https://www.bilbasen.dk/brugt/bil/fiat/panda?includeengroscvr=true&includeleasing=false",
+        description="Search URL for Fiat Panda listings"
     )
     
     # Scraper configuration
@@ -59,8 +59,8 @@ class Settings(BaseSettings):
     log_format: str = Field(default="json", description="Logging format (json or text)")
     
     def get_search_url(self) -> str:
-        """Get the formatted search URL with the search term."""
-        return self.search_url.format(search_term=self.search_term.replace(" ", "+"))
+        """Get the search URL for Fiat Panda listings."""
+        return self.search_url
     
     def get_scoring_weights(self) -> Dict[str, float]:
         """Get scoring weights as a dictionary."""

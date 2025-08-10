@@ -49,7 +49,7 @@ class JSONFormatter(logging.Formatter):
 def get_logging_config() -> Dict[str, Any]:
     """Get logging configuration dictionary."""
     if settings.log_format.lower() == "json":
-        formatter_class = "src.app.logging_conf.JSONFormatter"
+        formatter_class = f"{__name__}.JSONFormatter"
         format_string = ""  # Not used for JSON formatter
     else:
         formatter_class = "logging.Formatter"
