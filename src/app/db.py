@@ -74,17 +74,29 @@ class ListingCRUD:
 
         # Apply filters
         if min_price is not None:
-            statement = statement.where(Listing.price_dkk >= min_price)
+            statement = statement.where(
+                (Listing.price_dkk.is_not(None)) & (Listing.price_dkk >= min_price)
+            )
         if max_price is not None:
-            statement = statement.where(Listing.price_dkk <= max_price)
+            statement = statement.where(
+                (Listing.price_dkk.is_not(None)) & (Listing.price_dkk <= max_price)
+            )
         if min_year is not None:
-            statement = statement.where(Listing.year >= min_year)
+            statement = statement.where(
+                (Listing.year.is_not(None)) & (Listing.year >= min_year)
+            )
         if max_year is not None:
-            statement = statement.where(Listing.year <= max_year)
+            statement = statement.where(
+                (Listing.year.is_not(None)) & (Listing.year <= max_year)
+            )
         if min_km is not None:
-            statement = statement.where(Listing.kilometers >= min_km)
+            statement = statement.where(
+                (Listing.kilometers.is_not(None)) & (Listing.kilometers >= min_km)
+            )
         if max_km is not None:
-            statement = statement.where(Listing.kilometers <= max_km)
+            statement = statement.where(
+                (Listing.kilometers.is_not(None)) & (Listing.kilometers <= max_km)
+            )
 
         # Apply ordering
         if hasattr(Listing, order_by):
@@ -97,7 +109,7 @@ class ListingCRUD:
         # Apply pagination
         statement = statement.offset(skip).limit(limit)
 
-        return session.exec(statement).all()
+        return list(session.exec(statement).all())
 
     @staticmethod
     def get_top_listings(session: Session, limit: int = 10) -> List[Listing]:
@@ -108,7 +120,7 @@ class ListingCRUD:
             .order_by(desc(Listing.score))
             .limit(limit)
         )
-        return session.exec(statement).all()
+        return list(session.exec(statement).all())
 
     @staticmethod
     def update_listing(
@@ -142,7 +154,7 @@ class ListingCRUD:
         return True
 
     @staticmethod
-    def upsert_listing(session: Session, listing: ListingCreate) -> Listing:
+    def upsert_listing(session: Session, listing: ListingCreate) -> Optional[Listing]:
         """Insert or update a listing based on URL."""
         existing = ListingCRUD.get_listing_by_url(session, listing.url)
         if existing:
@@ -166,7 +178,7 @@ class ListingCRUD:
 
         result = session.exec(stats_query).first()
 
-        if not result or result.total_count == 0:
+        if not result or result[3] == 0:
             return {
                 "min_score": 0,
                 "max_score": 0,
@@ -198,10 +210,10 @@ class ListingCRUD:
         score_ranges = {row[0]: row[1] for row in ranges_result}
 
         return {
-            "min_score": result.min_score or 0,
-            "max_score": result.max_score or 0,
-            "mean_score": float(result.mean_score) if result.mean_score else 0.0,
-            "total_listings": result.total_count,
+            "min_score": result[0] or 0,
+            "max_score": result[1] or 0,
+            "mean_score": float(result[2]) if result[2] else 0.0,
+            "total_listings": result[3],
             "score_ranges": score_ranges,
         }
 

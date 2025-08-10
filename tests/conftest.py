@@ -3,13 +3,11 @@
 import pytest
 import tempfile
 import os
-from pathlib import Path
 from sqlmodel import SQLModel, create_engine, Session
 from fastapi.testclient import TestClient
 import pandas as pd
 from typing import Generator, Dict, Any
 
-from src.app.config import settings
 from src.app.db import get_session
 from src.app.server import app
 from src.app.models import Listing, ListingCreate

@@ -1,9 +1,7 @@
 """Main scraper module for Bilbasen Fiat Panda listings."""
 
-import asyncio
 import re
-from typing import List, Optional, Dict, Any
-from urllib.parse import urljoin, urlparse
+from typing import List, Optional
 from dataclasses import dataclass
 
 from ..config import settings
@@ -11,7 +9,7 @@ from ..logging_conf import get_logger
 from ..models import ListingCreate
 from ..parse_condition import parse_condition
 from .playwright_client import get_playwright_client
-from .selectors import get_selector, get_pattern, URL_PATTERNS
+from .selectors import get_selector, URL_PATTERNS
 from .json_extractor import BilbasenJSONExtractor
 
 logger = get_logger("scraper")
@@ -248,7 +246,7 @@ class BilbasenScraper:
         Returns:
             List of normalized listings ready for database
         """
-        logger.info(f"Starting JSON-based scrape of Bilbasen search results")
+        logger.info("Starting JSON-based scrape of Bilbasen search results")
         all_listings = []
 
         async with get_playwright_client() as client:

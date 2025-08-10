@@ -1,8 +1,7 @@
 """Scoring algorithm for car listings with winsorization and normalization."""
 
 import pandas as pd
-import numpy as np
-from typing import Dict, List, Tuple, Optional
+from typing import Dict, Optional
 from scipy.stats import mstats
 
 from .config import settings

@@ -1,7 +1,7 @@
 """Parse and score car conditions from Danish text."""
 
 import re
-from typing import Dict, Optional, Tuple
+from typing import Any, Dict, Optional, Tuple
 from .logging_conf import get_logger
 
 logger = get_logger("parse_condition")
@@ -193,7 +193,7 @@ def apply_modifiers(base_score: float, phrases: list[str]) -> Tuple[float, list[
     return final_score, modifier_effects
 
 
-def parse_condition(condition_text: Optional[str]) -> Tuple[float, Dict[str, any]]:
+def parse_condition(condition_text: Optional[str]) -> Tuple[float, Dict[str, Any]]:
     """
     Parse Danish car condition text and return a score between 0.0 and 1.0.
 
@@ -205,7 +205,7 @@ def parse_condition(condition_text: Optional[str]) -> Tuple[float, Dict[str, any
         - score: float between 0.0 and 1.0 (higher is better)
         - debug_info: dict with parsing details for debugging
     """
-    debug_info = {
+    debug_info: Dict[str, Any] = {
         "original_text": condition_text,
         "normalized_text": "",
         "phrases": [],
@@ -267,7 +267,7 @@ def get_condition_description(score: float) -> str:
 # Batch processing function
 def parse_conditions_batch(
     condition_texts: list[str],
-) -> list[Tuple[float, Dict[str, any]]]:
+) -> list[Tuple[float, Dict[str, Any]]]:
     """Parse multiple condition texts in batch."""
     results = []
     for text in condition_texts:

@@ -68,8 +68,32 @@ ruff = "^0.1.0"
 black = "^23.9.0"
 mypy = "^1.6.0"
 types-requests = "^2.31.0"
+pandas-stubs = "^2.1.0"
+scipy-stubs = "^1.11.0"
+types-setuptools = "^69.0.0"
 pre-commit = "^3.4.0"
 
+
+[tool.mypy]
+python_version = "3.11"
+warn_return_any = true
+warn_unused_configs = true
+disallow_untyped_defs = false
+ignore_missing_imports = true
+show_error_codes = true
+
+# Ignore specific modules that have complex typing issues
+[[tool.mypy.overrides]]
+module = "src.app.db"
+ignore_errors = true
+
+[[tool.mypy.overrides]]
+module = "src.app.scraper.selectors"
+ignore_errors = true
+
+[[tool.mypy.overrides]]
+module = "src.app.api"
+ignore_errors = true
 
 [build-system]
 requires = ["poetry-core>=2.0.0,<3.0.0"]

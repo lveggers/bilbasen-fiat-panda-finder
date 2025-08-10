@@ -8,7 +8,7 @@ import pandas as pd
 
 from .config import settings
 from .db import get_session, ListingCRUD, create_db_and_tables
-from .models import ListingRead, ListingCreate, ScoreDistribution
+from .models import ListingRead
 from .scraper.scraper import scrape_bilbasen_listings
 from .scoring import score_listings_dataframe
 from .logging_conf import get_logger, setup_logging

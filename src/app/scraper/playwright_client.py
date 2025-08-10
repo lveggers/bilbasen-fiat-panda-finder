@@ -3,7 +3,7 @@
 import asyncio
 import random
 import time
-from typing import Optional, Dict, Any, List
+from typing import Optional, List
 from pathlib import Path
 from contextlib import asynccontextmanager
 
@@ -18,7 +18,7 @@ from playwright.async_api import Error as PlaywrightError
 
 from ..config import settings
 from ..logging_conf import get_logger
-from .selectors import get_selector, get_wait_condition
+from .selectors import get_selector
 
 logger = get_logger("playwright_client")
 
@@ -162,8 +162,8 @@ class PlaywrightClient:
     async def get_page_with_retry(
         self,
         url: str,
-        max_retries: int = None,
-        wait_for_selector: str = None,
+        max_retries: int | None = None,
+        wait_for_selector: str | None = None,
         save_fixture: bool = True,
     ) -> tuple[Page, str]:
         """

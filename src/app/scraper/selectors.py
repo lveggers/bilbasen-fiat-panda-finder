@@ -1,6 +1,5 @@
 """CSS and XPath selectors for Bilbasen.dk scraping."""
 
-from typing import Dict, Any
 
 # CSS selectors for different page elements
 SELECTORS = {

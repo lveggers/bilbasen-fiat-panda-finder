@@ -1,12 +1,11 @@
 """FastAPI server with Jinja2 templates for the Bilbasen Fiat Panda Finder."""
 
-from typing import Dict, Any, List
+from typing import Dict, Any
 from fastapi import FastAPI, Request, Depends, HTTPException
 from fastapi.responses import HTMLResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 from sqlmodel import Session
-import json
 
 from .api import app as api_app
 from .config import settings
@@ -81,12 +80,12 @@ async def dashboard(request: Request, session: Session = Depends(get_session)):
 async def listings_page(
     request: Request,
     page: int = 1,
-    min_price: int = None,
-    max_price: int = None,
-    min_year: int = None,
-    max_year: int = None,
-    min_km: int = None,
-    max_km: int = None,
+    min_price: int | None = None,
+    max_price: int | None = None,
+    min_year: int | None = None,
+    max_year: int | None = None,
+    min_km: int | None = None,
+    max_km: int | None = None,
     session: Session = Depends(get_session),
 ):
     """Listings page with pagination and filters."""

@@ -314,10 +314,8 @@ class TestConditionEdgeCases:
 
             assert 0.0 <= score <= 1.0
 
-            # Should have both positive and negative effects
+            # Should have modifier effects
             effects = debug_info["modifier_effects"]
-            positive_effects = [e for e in effects if "positive" in e]
-            negative_effects = [e for e in effects if "negative" in e or "issue" in e]
 
             # Note: may not always have both due to keyword matching
             assert (
