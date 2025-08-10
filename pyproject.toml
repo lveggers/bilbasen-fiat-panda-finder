@@ -40,6 +40,7 @@ dev = [
 name = "bilbasen-fiat-panda-finder"
 version = "0.1.0"
 description = "A web scraper for finding the best Fiat Panda deals on Bilbasen.dk"
+authors = ["lveggers <69449598+lveggers@users.noreply.github.com>"]
 packages = [{include = "app", from = "src"}]
 
 
