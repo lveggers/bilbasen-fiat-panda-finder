@@ -241,7 +241,6 @@ class TestScoringUtilities:
         assert all(0 <= score <= 100 for score in result["score"])
 
 
-
 @pytest.mark.unit
 class TestScoringEdgeCases:
     """Test edge cases in scoring."""
