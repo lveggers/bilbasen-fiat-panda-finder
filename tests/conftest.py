@@ -26,15 +26,15 @@ def setup_test_logging():
 def temp_db():
     """Create a temporary database for testing."""
     # Create temporary file
-    db_fd, db_path = tempfile.mkstemp(suffix='.db')
+    db_fd, db_path = tempfile.mkstemp(suffix=".db")
     os.close(db_fd)
-    
+
     # Create engine with temporary database
     engine = create_engine(f"sqlite:///{db_path}", echo=False)
     SQLModel.metadata.create_all(engine)
-    
+
     yield engine
-    
+
     # Clean up
     try:
         os.unlink(db_path)
@@ -52,15 +52,15 @@ def test_session(temp_db) -> Generator[Session, None, None]:
 @pytest.fixture
 def test_client(test_session) -> TestClient:
     """Create a test client with dependency override."""
-    
+
     def get_test_session():
         return test_session
-    
+
     app.dependency_overrides[get_session] = get_test_session
-    
+
     with TestClient(app) as client:
         yield client
-    
+
     # Clean up
     app.dependency_overrides.clear()
 
@@ -82,7 +82,7 @@ def sample_listings_data() -> list[Dict[str, Any]]:
             "fuel_type": "Benzin",
             "transmission": "Manuel",
             "location": "København",
-            "dealer_name": "Auto Hansen"
+            "dealer_name": "Auto Hansen",
         },
         {
             "title": "Fiat Panda 1.0 70 Easy",
@@ -97,7 +97,7 @@ def sample_listings_data() -> list[Dict[str, Any]]:
             "fuel_type": "Benzin",
             "transmission": "Manuel",
             "location": "Aarhus",
-            "dealer_name": "Bil Center"
+            "dealer_name": "Bil Center",
         },
         {
             "title": "Fiat Panda 1.2 69 Lounge",
@@ -112,7 +112,7 @@ def sample_listings_data() -> list[Dict[str, Any]]:
             "fuel_type": "Benzin",
             "transmission": "Automatik",
             "location": "Odense",
-            "dealer_name": "Premium Auto"
+            "dealer_name": "Premium Auto",
         },
         {
             "title": "Fiat Panda 0.9 TwinAir",
@@ -127,7 +127,7 @@ def sample_listings_data() -> list[Dict[str, Any]]:
             "fuel_type": "Benzin",
             "transmission": "Manuel",
             "location": "Aalborg",
-            "dealer_name": "Budget Biler"
+            "dealer_name": "Budget Biler",
         },
         {
             "title": "Fiat Panda 1.3 MultiJet",
@@ -142,8 +142,8 @@ def sample_listings_data() -> list[Dict[str, Any]]:
             "fuel_type": "Diesel",
             "transmission": "Manuel",
             "location": "Esbjerg",
-            "dealer_name": "Diesel Specialisten"
-        }
+            "dealer_name": "Diesel Specialisten",
+        },
     ]
 
 
@@ -151,19 +151,19 @@ def sample_listings_data() -> list[Dict[str, Any]]:
 def sample_listings(test_session, sample_listings_data) -> list[Listing]:
     """Create sample listings in the test database."""
     listings = []
-    
+
     for data in sample_listings_data:
         listing_create = ListingCreate(**data)
         listing = Listing.model_validate(listing_create)
         test_session.add(listing)
         listings.append(listing)
-    
+
     test_session.commit()
-    
+
     # Refresh to get IDs
     for listing in listings:
         test_session.refresh(listing)
-    
+
     return listings
 
 
@@ -211,7 +211,7 @@ def mock_scraper_response():
         <div class="transmission">Manuel</div>
         <div class="dealer-name">Auto Hansen</div>
         <div class="location">København</div>
-        """
+        """,
     }
 
 
@@ -237,6 +237,7 @@ def danish_condition_samples() -> Dict[str, float]:
 # Skip markers for different test categories
 pytest_plugins = []
 
+
 # Custom markers
 def pytest_configure(config):
     """Configure pytest markers."""
@@ -255,24 +256,24 @@ def pytest_configure(config):
     config.addinivalue_line(
         "markers", "live: marks tests that require live internet connection"
     )
-    config.addinivalue_line(
-        "markers", "slow: marks tests as slow (taking > 1s)"
-    )
+    config.addinivalue_line("markers", "slow: marks tests as slow (taking > 1s)")
 
 
 # Test utilities
 class TestUtils:
     """Utility functions for tests."""
-    
+
     @staticmethod
     def assert_listing_equal(listing1: Listing, listing2: Listing, ignore_fields=None):
         """Assert two listings are equal, ignoring specified fields."""
-        ignore_fields = ignore_fields or ['id', 'fetched_at']
-        
+        ignore_fields = ignore_fields or ["id", "fetched_at"]
+
         for field in listing1.model_fields:
             if field not in ignore_fields:
-                assert getattr(listing1, field) == getattr(listing2, field), f"Field {field} mismatch"
-    
+                assert getattr(listing1, field) == getattr(
+                    listing2, field
+                ), f"Field {field} mismatch"
+
     @staticmethod
     def create_test_listing(**kwargs) -> ListingCreate:
         """Create a test listing with default values."""
@@ -285,7 +286,7 @@ class TestUtils:
             "condition_str": "God stand",
             "condition_score": 0.7,
             "brand": "Fiat",
-            "model": "Panda"
+            "model": "Panda",
         }
         defaults.update(kwargs)
         return ListingCreate(**defaults)
