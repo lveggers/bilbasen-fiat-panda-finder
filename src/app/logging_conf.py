@@ -12,7 +12,7 @@ from .config import settings
 
 class JSONFormatter(logging.Formatter):
     """Custom JSON formatter for structured logging."""
-    
+
     def format(self, record: logging.LogRecord) -> str:
         """Format log record as JSON."""
         log_data = {
@@ -24,25 +24,43 @@ class JSONFormatter(logging.Formatter):
             "function": record.funcName,
             "line": record.lineno,
         }
-        
+
         # Add exception info if present
         if record.exc_info:
             log_data["exception"] = self.formatException(record.exc_info)
-        
+
         # Add extra fields from the record
         extra_fields = {
             key: value
             for key, value in record.__dict__.items()
-            if key not in {
-                "name", "msg", "args", "levelname", "levelno", "pathname",
-                "filename", "module", "exc_info", "exc_text", "stack_info",
-                "lineno", "funcName", "created", "msecs", "relativeCreated",
-                "thread", "threadName", "processName", "process", "getMessage"
+            if key
+            not in {
+                "name",
+                "msg",
+                "args",
+                "levelname",
+                "levelno",
+                "pathname",
+                "filename",
+                "module",
+                "exc_info",
+                "exc_text",
+                "stack_info",
+                "lineno",
+                "funcName",
+                "created",
+                "msecs",
+                "relativeCreated",
+                "thread",
+                "threadName",
+                "processName",
+                "process",
+                "getMessage",
             }
         }
         if extra_fields:
             log_data["extra"] = extra_fields
-        
+
         return json.dumps(log_data, ensure_ascii=False)
 
 
@@ -54,7 +72,7 @@ def get_logging_config() -> Dict[str, Any]:
     else:
         formatter_class = "logging.Formatter"
         format_string = "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
-    
+
     return {
         "version": 1,
         "disable_existing_loggers": False,
@@ -109,7 +127,7 @@ def setup_logging() -> None:
     """Set up application logging."""
     config = get_logging_config()
     logging.config.dictConfig(config)
-    
+
     # Get the main application logger
     logger = logging.getLogger("app")
     logger.info(
@@ -117,7 +135,7 @@ def setup_logging() -> None:
         extra={
             "log_level": settings.log_level,
             "log_format": settings.log_format,
-        }
+        },
     )
 
 
@@ -126,7 +144,7 @@ def get_logger(name: str) -> logging.Logger:
     # Ensure logging is set up
     if not logging.getLogger("app").handlers:
         setup_logging()
-    
+
     return logging.getLogger(f"app.{name}")
 
 
