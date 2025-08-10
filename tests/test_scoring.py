@@ -7,7 +7,6 @@ from src.app.scoring import (
     ListingScorer,
     create_scorer,
     score_listings_dataframe,
-    get_score_breakdown,
 )
 
 
@@ -241,43 +240,6 @@ class TestScoringUtilities:
         assert len(result) == len(sample_dataframe)
         assert all(0 <= score <= 100 for score in result["score"])
 
-    def test_get_score_breakdown(self, sample_dataframe):
-        """Test getting score breakdown statistics."""
-        scored_df = score_listings_dataframe(sample_dataframe)
-        breakdown = get_score_breakdown(scored_df)
-
-        assert "total_listings" in breakdown
-        assert "scored_listings" in breakdown
-        assert "statistics" in breakdown
-        assert "score_ranges" in breakdown
-        assert "top_10" in breakdown
-
-        assert breakdown["total_listings"] == len(sample_dataframe)
-        assert breakdown["scored_listings"] > 0
-
-        # Statistics should include basic stats
-        stats = breakdown["statistics"]
-        assert "min" in stats
-        assert "max" in stats
-        assert "mean" in stats
-        assert "median" in stats
-        assert "std" in stats
-
-        # Score ranges should be present
-        ranges = breakdown["score_ranges"]
-        assert isinstance(ranges, dict)
-
-        # Top 10 should be list of records
-        assert isinstance(breakdown["top_10"], list)
-        assert len(breakdown["top_10"]) <= 10
-
-    def test_get_score_breakdown_empty_dataframe(self):
-        """Test score breakdown with empty DataFrame."""
-        empty_df = pd.DataFrame()
-        breakdown = get_score_breakdown(empty_df)
-
-        assert "error" in breakdown
-        assert breakdown["total_listings"] == 0
 
 
 @pytest.mark.unit
