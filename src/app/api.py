@@ -198,20 +198,40 @@ async def get_detailed_score_breakdown(
 
         df = pd.DataFrame(data)
 
-        # Calculate basic statistics
-        breakdown = {
-            "total_listings": len(df),
+        # Calculate basic statistics (convert numpy types to native Python types)
+        statistics = {
             "score_stats": {
-                "min": df["score"].min() if not df.empty else 0,
-                "max": df["score"].max() if not df.empty else 0,
-                "mean": df["score"].mean() if not df.empty else 0,
-                "median": df["score"].median() if not df.empty else 0,
+                "min": int(df["score"].min()) if not df.empty else 0,
+                "max": int(df["score"].max()) if not df.empty else 0,
+                "mean": float(df["score"].mean()) if not df.empty else 0.0,
+                "median": float(df["score"].median()) if not df.empty else 0.0,
             },
             "price_stats": {
-                "min": df["price_dkk"].min() if not df.empty else 0,
-                "max": df["price_dkk"].max() if not df.empty else 0,
-                "mean": df["price_dkk"].mean() if not df.empty else 0,
+                "min": int(df["price_dkk"].min()) if not df.empty else 0,
+                "max": int(df["price_dkk"].max()) if not df.empty else 0,
+                "mean": float(df["price_dkk"].mean()) if not df.empty else 0.0,
             },
+        }
+
+        # Calculate score ranges
+        score_ranges = {}
+        if not df.empty:
+            # Group scores into ranges
+            ranges = [(0, 19), (20, 39), (40, 59), (60, 79), (80, 100)]
+            for min_score, max_score in ranges:
+                range_key = f"{min_score}-{max_score}"
+                count = len(df[(df["score"] >= min_score) & (df["score"] <= max_score)])
+                if count > 0:
+                    score_ranges[range_key] = count
+
+        # Get top 10 listings
+        top_10 = df.nlargest(10, "score").to_dict("records") if not df.empty else []
+
+        breakdown = {
+            "total_listings": len(df),
+            "statistics": statistics,
+            "score_ranges": score_ranges,
+            "top_10": top_10,
         }
 
         logger.info("Generated detailed score breakdown")

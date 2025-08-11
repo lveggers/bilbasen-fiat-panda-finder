@@ -82,9 +82,11 @@ class Settings(BaseSettings):
     # Logging
     log_level: str = Field(default="INFO", description="Logging level")
     log_format: str = Field(default="json", description="Logging format (json or text)")
-    
+
     # Test environment
-    testing: bool = Field(default=False, description="Skip startup scraping during tests")
+    testing: bool = Field(
+        default=False, description="Skip startup scraping during tests"
+    )
 
     def get_search_url(self) -> str:
         """Get the search URL for Fiat Panda listings."""

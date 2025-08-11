@@ -61,10 +61,10 @@ def test_session(temp_db) -> Generator[Session, None, None]:
 @pytest.fixture
 def test_client(temp_db) -> TestClient:
     """Create a test client with dependency override."""
-    
+
     # Create a test session
     test_session = Session(temp_db)
-    
+
     # Override the database session dependency
     def get_test_session():
         yield test_session
