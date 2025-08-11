@@ -29,6 +29,11 @@ async def startup_event():
     """Initialize database and scrape fresh data on startup."""
     logger.info("Starting application initialization...")
 
+    # Skip entire startup during tests
+    if settings.testing:
+        logger.info("Test environment detected, skipping startup initialization")
+        return
+
     # Create database tables
     create_db_and_tables()
     logger.info("Database tables created/verified")
