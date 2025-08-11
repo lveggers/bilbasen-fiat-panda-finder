@@ -1,5 +1,7 @@
 # Claude Code Development Workflow
 
+**IMPORTANT: Never use emojis in any code, comments, documentation, or output. Always use plain text.**
+
 ## Git Workflow for Feature Development
 
 This document outlines the development workflow to be followed for all code changes in this project.
