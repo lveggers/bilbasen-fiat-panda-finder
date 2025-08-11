@@ -21,8 +21,8 @@ logger = get_logger("api")
 
 # Request models
 class ScrapeRequest(BaseModel):
-    max_pages: int = Field(
-        default=3, ge=1, le=10, description="Maximum pages to scrape"
+    max_pages: Optional[int] = Field(
+        default=None, ge=1, le=50, description="Maximum pages to scrape (None = all)"
     )
     include_details: bool = Field(
         default=True, description="Include detailed listing information"
@@ -30,8 +30,8 @@ class ScrapeRequest(BaseModel):
 
 
 class SyncScrapeRequest(BaseModel):
-    max_pages: int = Field(
-        default=2, ge=1, le=5, description="Maximum pages to scrape (sync limit)"
+    max_pages: Optional[int] = Field(
+        default=None, ge=1, le=20, description="Maximum pages to scrape (None = all)"
     )
     include_details: bool = Field(
         default=False, description="Include detailed listing information"

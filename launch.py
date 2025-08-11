@@ -34,7 +34,8 @@ async def main():
         
         # 2. Scrape fresh data
         print("[2/5] Scraping fresh car listings...")
-        listings = await scrape_bilbasen_listings(max_pages=1, use_json=True)
+        # Scrape all available pages (no explicit page cap)
+        listings = await scrape_bilbasen_listings(max_pages=None, use_json=True)
         print(f"[OK] Scraped {len(listings)} listings")
         
         # 3. Store in database

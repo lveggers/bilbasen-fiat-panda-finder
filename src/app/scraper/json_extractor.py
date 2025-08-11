@@ -66,6 +66,11 @@ class BilbasenJSONExtractor:
                     raw_listings = query_data["listings"]
 
                     for listing_data in raw_listings:
+                        # Only include Fiat Panda listings to stay on-spec
+                        make = (listing_data.get("make") or "").lower()
+                        model = (listing_data.get("model") or "").lower()
+                        if make != "fiat" or model != "panda":
+                            continue
                         normalized_listing = self._normalize_listing_data(listing_data)
                         if normalized_listing:
                             listings.append(normalized_listing)

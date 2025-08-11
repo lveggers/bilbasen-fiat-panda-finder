@@ -1,8 +1,11 @@
 """Main scraper module for Bilbasen Fiat Panda listings."""
 
 import re
+import asyncio
 from typing import List, Optional
 from dataclasses import dataclass
+
+import httpx
 
 from ..config import settings
 from ..logging_conf import get_logger
@@ -42,7 +45,7 @@ class BilbasenScraper:
         self.base_url = settings.base_url
         self.json_extractor = BilbasenJSONExtractor()
 
-    async def scrape_search_results(self, max_pages: int = 5) -> List[ScrapedListing]:
+    async def scrape_search_results(self, max_pages: Optional[int] = None) -> List[ScrapedListing]:
         """
         Scrape search results from Bilbasen.
 
@@ -56,9 +59,14 @@ class BilbasenScraper:
             f"Starting scrape of Bilbasen search results for '{settings.search_term}'"
         )
         all_listings = []
+        pages_scraped = 0
 
         async with get_playwright_client() as client:
-            for page_num in range(1, max_pages + 1):
+            page_num = 1
+            while True:
+                # Respect optional page cap
+                if max_pages is not None and page_num > max_pages:
+                    break
                 try:
                     # Construct page URL
                     page_url = (
@@ -104,23 +112,24 @@ class BilbasenScraper:
                             page, listing_urls
                         )
                         all_listings.extend(page_listings)
+                        pages_scraped += 1
 
-                        # Check if there's a next page
-                        next_page_link = await page.query_selector(
-                            get_selector("search", "pagination_next")
-                        )
-                        if not next_page_link:
-                            logger.info(f"No more pages after page {page_num}")
-                            break
+                        # Advance to the next page; don't rely on presence of a next-button
+                        page_num += 1
 
                     finally:
                         await page.close()
 
                 except Exception as e:
                     logger.error(f"Error scraping page {page_num}: {e}")
-                    continue
+                    # On error, attempt to proceed to next page when unlimited
+                    if max_pages is None:
+                        page_num += 1
+                        continue
+                    else:
+                        continue
 
-        logger.info(f"Scraped {len(all_listings)} total listings from {page_num} pages")
+        logger.info(f"Scraped {len(all_listings)} total listings from {pages_scraped} pages")
         return all_listings
 
     async def _extract_listing_urls(self, page) -> List[str]:
@@ -235,7 +244,7 @@ class BilbasenScraper:
         return listings
 
     async def scrape_search_results_json(
-        self, max_pages: int = 5
+        self, max_pages: Optional[int] = None
     ) -> List[ListingCreate]:
         """
         Scrape search results from Bilbasen using JSON extraction.
@@ -248,71 +257,105 @@ class BilbasenScraper:
         """
         logger.info("Starting JSON-based scrape of Bilbasen search results")
         all_listings = []
+        pages_scraped = 0
 
-        async with get_playwright_client() as client:
-            for page_num in range(1, max_pages + 1):
-                try:
-                    # Construct page URL
-                    page_url = (
-                        f"{self.search_url}&page={page_num}"
-                        if page_num > 1
-                        else self.search_url
-                    )
-
-                    logger.info(f"Scraping page {page_num}: {page_url}")
-
-                    # Get page content
-                    page, content = await client.get_page_with_retry(
-                        page_url,
-                        wait_for_selector=get_selector("search", "listings_container"),
-                    )
-
+        # Try Playwright first; if it fails (e.g., environment without subprocess support),
+        # fall back to direct HTTP fetching of the HTML and JSON extraction.
+        try:
+            async with get_playwright_client() as client:
+                page_num = 1
+                while True:
+                    if max_pages is not None and page_num > max_pages:
+                        break
                     try:
-                        # Extract listings from JSON data
-                        normalized_listings = (
-                            self.json_extractor.extract_listings_from_html(content)
+                        page_url = (
+                            f"{self.search_url}&page={page_num}" if page_num > 1 else self.search_url
                         )
-
-                        if not normalized_listings:
-                            logger.warning(f"No listings found on page {page_num}")
-                            if page_num == 1:
-                                logger.info("No results found for search term")
-                                break
-                            else:
+                        logger.info(f"Scraping page {page_num}: {page_url}")
+                        page, content = await client.get_page_with_retry(
+                            page_url,
+                            wait_for_selector=get_selector("search", "listings_container"),
+                        )
+                        try:
+                            normalized_listings = (
+                                self.json_extractor.extract_listings_from_html(content)
+                            )
+                            if not normalized_listings:
                                 logger.info(
-                                    f"Reached end of results at page {page_num}"
+                                    f"Reached end of results at page {page_num} (no listings)"
                                 )
                                 break
-
-                        logger.info(
-                            f"Found {len(normalized_listings)} listings on page {page_num}"
-                        )
-
-                        # Convert to ListingCreate models
-                        listing_models = self.json_extractor.create_listing_models(
-                            normalized_listings
-                        )
-                        all_listings.extend(listing_models)
-
-                        # Check if there are more pages by looking for next page button
-                        next_page_link = await page.query_selector(
-                            get_selector("search", "pagination_next")
-                        )
-                        if not next_page_link:
-                            logger.info(f"No more pages after page {page_num}")
-                            break
-
-                    finally:
-                        await page.close()
-
-                except Exception as e:
-                    logger.error(f"Error scraping page {page_num}: {e}")
-                    continue
+                            logger.info(
+                                f"Found {len(normalized_listings)} listings on page {page_num}"
+                            )
+                            listing_models = self.json_extractor.create_listing_models(
+                                normalized_listings
+                            )
+                            all_listings.extend(listing_models)
+                            pages_scraped += 1
+                            page_num += 1
+                        finally:
+                            await page.close()
+                    except Exception as e:
+                        logger.error(f"Error scraping page {page_num}: {e}")
+                        if max_pages is None:
+                            page_num += 1
+                            continue
+                        else:
+                            continue
+        except Exception as e:
+            logger.warning(
+                f"Playwright unavailable, falling back to HTTP scraping: {e}"
+            )
+            httpx_results = await self._scrape_search_results_json_via_httpx(max_pages)
+            all_listings.extend(httpx_results)
 
         logger.info(
-            f"JSON-based scraping completed: {len(all_listings)} normalized listings"
+            f"JSON-based scraping completed: {len(all_listings)} normalized listings across {pages_scraped} pages"
         )
         return all_listings
+
+    async def _scrape_search_results_json_via_httpx(
+        self, max_pages: Optional[int]
+    ) -> List[ListingCreate]:
+        """Fallback scraper using HTTPX to fetch pages and extract JSON."""
+        listings: List[ListingCreate] = []
+        page_num = 1
+        async with httpx.AsyncClient(timeout=20.0, headers={"User-Agent": settings.user_agent}) as client:
+            while True:
+                if max_pages is not None and page_num > max_pages:
+                    break
+                page_url = (
+                    f"{self.search_url}&page={page_num}" if page_num > 1 else self.search_url
+                )
+                logger.info(f"HTTP fetch page {page_num}: {page_url}")
+                try:
+                    resp = await client.get(page_url, follow_redirects=True)
+                    resp.raise_for_status()
+                    html = resp.text
+                    normalized_listings = self.json_extractor.extract_listings_from_html(
+                        html
+                    )
+                    if not normalized_listings:
+                        logger.info(
+                            f"Reached end of results at page {page_num} (no listings via HTTP)"
+                        )
+                        break
+                    listing_models = self.json_extractor.create_listing_models(
+                        normalized_listings
+                    )
+                    listings.extend(listing_models)
+                    page_num += 1
+                    # polite delay between requests
+                    await asyncio.sleep(0.5)
+                except Exception as e:
+                    logger.warning(f"HTTP scraping failed on page {page_num}: {e}")
+                    if max_pages is None:
+                        page_num += 1
+                        continue
+                    else:
+                        break
+        return listings
 
     async def scrape_listing_details(
         self, scraped_listing: ScrapedListing
@@ -586,7 +629,7 @@ class BilbasenScraper:
         return normalized if normalized else None
 
     async def scrape_full_listings(
-        self, max_pages: int = 5, use_json: bool = True
+        self, max_pages: Optional[int] = None, use_json: bool = True
     ) -> List[ListingCreate]:
         """
         Complete scraping workflow.
@@ -610,7 +653,7 @@ class BilbasenScraper:
             return await self._scrape_full_listings_legacy(max_pages)
 
     async def _scrape_full_listings_legacy(
-        self, max_pages: int = 5
+        self, max_pages: Optional[int] = None
     ) -> List[ListingCreate]:
         """Legacy DOM-based scraping workflow (kept for compatibility)."""
         logger.info("Using legacy DOM-based scraping")
@@ -662,7 +705,7 @@ class BilbasenScraper:
 
 # Convenience function
 async def scrape_bilbasen_listings(
-    max_pages: int = 3, use_json: bool = True
+    max_pages: Optional[int] = None, use_json: bool = True
 ) -> List[ListingCreate]:
     """
     Convenience function to scrape Bilbasen listings.

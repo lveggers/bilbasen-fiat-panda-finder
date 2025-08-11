@@ -50,8 +50,8 @@ async def startup_event():
         else:
             logger.info("Updating with fresh data...")
 
-        # Scrape fresh data
-        listings = await scrape_bilbasen_listings(max_pages=1, use_json=True)
+        # Scrape fresh data across all result pages
+        listings = await scrape_bilbasen_listings(max_pages=None, use_json=True)
         logger.info(f"Scraped {len(listings)} listings")
 
         # Store listings in database (they include scores from scraping)

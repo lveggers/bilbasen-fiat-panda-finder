@@ -13,7 +13,7 @@ SELECTORS = {
         "listing_year": ".Listing_year__dBuOe, .bb-listing-year, [data-testid='year']",
         "listing_kilometers": ".Listing_km__Kd7o4, .bb-listing-km, [data-testid='mileage']",
         "listing_location": ".Listing_location__KjqBZ, .bb-listing-location, [data-testid='location']",
-        "pagination_next": "button[aria-label='Næste'], a[aria-label='Næste'], .pagination-next",
+        "pagination_next": "button[aria-label='Næste'], a[aria-label='Næste'], .pagination-next, a[rel='next']",
         "no_results": ".no-results, .empty-state",
     },
     # Individual listing detail page
