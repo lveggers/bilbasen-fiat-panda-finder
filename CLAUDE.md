@@ -2,6 +2,15 @@
 
 **IMPORTANT: Never use emojis in any code, comments, documentation, or output. Always use plain text.**
 
+**CRITICAL CODE FORMATTING INSTRUCTION: Before pushing commits that contains changes to ANY Python files:**
+
+1. **ALWAYS RUN BLACK FORMATTING** - Before pushing, always run black formatting
+2. **COMMAND TO USE**: `poetry run black src/ tests/` or `poetry run black <specific-file>`
+3. **VERIFY FORMATTING**: Run `poetry run black --check src/ tests/` to verify all files are properly formatted
+4. **NEVER COMMIT UNFORMATTED CODE** - CI will fail if Black formatting is not applied
+
+This prevents recurring CI failures due to code formatting issues.
+
 **CRITICAL WORKFLOW INSTRUCTION: When encountering code issues that require skipping or deferring:**
 
 1. **ALWAYS ASK PERMISSION FIRST** - Never skip failing tests, broken functionality, or defer fixes without explicit user approval

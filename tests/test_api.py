@@ -304,8 +304,7 @@ class TestUtilityEndpoints:
         """Test synchronous scraping endpoint."""
         # This is a slow test as it may actually attempt scraping
         response = test_client.post(
-            "/api/v1/scrape/sync",
-            json={"max_pages": 1, "include_details": False}
+            "/api/v1/scrape/sync", json={"max_pages": 1, "include_details": False}
         )
 
         # Should either succeed or fail gracefully

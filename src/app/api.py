@@ -18,14 +18,25 @@ from .logging_conf import get_logger, setup_logging
 setup_logging()
 logger = get_logger("api")
 
+
 # Request models
 class ScrapeRequest(BaseModel):
-    max_pages: int = Field(default=3, ge=1, le=10, description="Maximum pages to scrape")
-    include_details: bool = Field(default=True, description="Include detailed listing information")
+    max_pages: int = Field(
+        default=3, ge=1, le=10, description="Maximum pages to scrape"
+    )
+    include_details: bool = Field(
+        default=True, description="Include detailed listing information"
+    )
+
 
 class SyncScrapeRequest(BaseModel):
-    max_pages: int = Field(default=2, ge=1, le=5, description="Maximum pages to scrape (sync limit)")
-    include_details: bool = Field(default=False, description="Include detailed listing information")
+    max_pages: int = Field(
+        default=2, ge=1, le=5, description="Maximum pages to scrape (sync limit)"
+    )
+    include_details: bool = Field(
+        default=False, description="Include detailed listing information"
+    )
+
 
 # Create FastAPI app
 app = FastAPI(
@@ -265,7 +276,10 @@ async def trigger_scraping(
     try:
         # Add scraping task to background
         background_tasks.add_task(
-            scrape_and_store_listings, request.max_pages, request.include_details, session
+            scrape_and_store_listings,
+            request.max_pages,
+            request.include_details,
+            session,
         )
 
         logger.info(
@@ -294,7 +308,9 @@ async def scrape_sync(
         logger.info(f"Starting synchronous scraping: max_pages={request.max_pages}")
 
         # Scrape listings
-        scraped_listings = await scrape_bilbasen_listings(request.max_pages, request.include_details)
+        scraped_listings = await scrape_bilbasen_listings(
+            request.max_pages, request.include_details
+        )
 
         if not scraped_listings:
             return {
