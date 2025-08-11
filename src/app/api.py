@@ -1,9 +1,10 @@
 """FastAPI endpoints for the Bilbasen Fiat Panda Finder."""
 
 from typing import List, Optional, Dict, Any
-from fastapi import FastAPI, HTTPException, Depends, Query, BackgroundTasks
+from fastapi import FastAPI, HTTPException, Depends, Query, BackgroundTasks, Body
 from fastapi.middleware.cors import CORSMiddleware
 from sqlmodel import Session
+from pydantic import BaseModel, Field
 import pandas as pd
 
 from .config import settings
@@ -16,6 +17,15 @@ from .logging_conf import get_logger, setup_logging
 # Setup logging
 setup_logging()
 logger = get_logger("api")
+
+# Request models
+class ScrapeRequest(BaseModel):
+    max_pages: int = Field(default=3, ge=1, le=10, description="Maximum pages to scrape")
+    include_details: bool = Field(default=True, description="Include detailed listing information")
+
+class SyncScrapeRequest(BaseModel):
+    max_pages: int = Field(default=2, ge=1, le=5, description="Maximum pages to scrape (sync limit)")
+    include_details: bool = Field(default=False, description="Include detailed listing information")
 
 # Create FastAPI app
 app = FastAPI(
@@ -248,27 +258,24 @@ async def get_detailed_score_breakdown(
 @app.post("/scrape", tags=["Scraping"])
 async def trigger_scraping(
     background_tasks: BackgroundTasks,
-    max_pages: int = Query(3, ge=1, le=10, description="Maximum pages to scrape"),
-    include_details: bool = Query(
-        True, description="Include detailed listing information"
-    ),
+    request: ScrapeRequest = Body(...),
     session: Session = Depends(get_session),
 ) -> Dict[str, Any]:
     """Trigger background scraping of Bilbasen listings."""
     try:
         # Add scraping task to background
         background_tasks.add_task(
-            scrape_and_store_listings, max_pages, include_details, session
+            scrape_and_store_listings, request.max_pages, request.include_details, session
         )
 
         logger.info(
-            f"Triggered scraping task: max_pages={max_pages}, include_details={include_details}"
+            f"Triggered scraping task: max_pages={request.max_pages}, include_details={request.include_details}"
         )
 
         return {
             "message": "Scraping task started",
-            "max_pages": max_pages,
-            "include_details": include_details,
+            "max_pages": request.max_pages,
+            "include_details": request.include_details,
             "status": "running",
         }
 
@@ -279,18 +286,15 @@ async def trigger_scraping(
 
 @app.post("/scrape/sync", tags=["Scraping"])
 async def scrape_sync(
-    max_pages: int = Query(2, ge=1, le=5, description="Maximum pages to scrape"),
-    include_details: bool = Query(
-        False, description="Include detailed listing information"
-    ),
+    request: SyncScrapeRequest = Body(...),
     session: Session = Depends(get_session),
 ) -> Dict[str, Any]:
     """Synchronous scraping for immediate results (limited scope)."""
     try:
-        logger.info(f"Starting synchronous scraping: max_pages={max_pages}")
+        logger.info(f"Starting synchronous scraping: max_pages={request.max_pages}")
 
         # Scrape listings
-        scraped_listings = await scrape_bilbasen_listings(max_pages, include_details)
+        scraped_listings = await scrape_bilbasen_listings(request.max_pages, request.include_details)
 
         if not scraped_listings:
             return {
