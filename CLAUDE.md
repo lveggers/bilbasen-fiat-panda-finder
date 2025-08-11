@@ -2,6 +2,20 @@
 
 **IMPORTANT: Never use emojis in any code, comments, documentation, or output. Always use plain text.**
 
+**CRITICAL WORKFLOW INSTRUCTION: When encountering code issues that require skipping or deferring:**
+
+1. **ALWAYS ASK PERMISSION FIRST** - Never skip failing tests, broken functionality, or defer fixes without explicit user approval
+2. **IF USER APPROVES SKIPPING** - Must immediately create a comprehensive GitHub issue that includes:
+   - Complete error logs and stack traces
+   - Detailed analysis of root causes
+   - Potential solution approaches
+   - Impact assessment on the codebase
+   - Clear steps to reproduce the issue
+3. **DOCUMENT EVERYTHING** - The issue must be thorough enough for future developers to understand and fix
+4. **REFERENCE THE SKIP** - Any temporary workarounds must reference the GitHub issue number
+
+This ensures no issues are lost and maintains full project transparency.
+
 ## Git Workflow for Feature Development
 
 This document outlines the development workflow to be followed for all code changes in this project.
