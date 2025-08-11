@@ -267,8 +267,12 @@ async def web_health_check():
 @app.exception_handler(404)
 async def not_found_handler(request: Request, exc):
     """Custom 404 page."""
-    context = {"request": request, "search_term": settings.search_term}
-    return templates.TemplateResponse("404.html", context, status_code=404)
+    context = {
+        "request": request,
+        "search_term": settings.search_term,
+        "error": "Page not found.",
+    }
+    return templates.TemplateResponse("error.html", context, status_code=404)
 
 
 @app.exception_handler(500)
