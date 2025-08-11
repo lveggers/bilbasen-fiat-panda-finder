@@ -62,18 +62,15 @@ jobs:
   test:
     name: Test Suite
     runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        python-version: ["3.11", "3.12"]
     
     steps:
     - name: Checkout code
       uses: actions/checkout@v4
 
-    - name: Set up Python ${{ matrix.python-version }}
+    - name: Set up Python
       uses: actions/setup-python@v4
       with:
-        python-version: ${{ matrix.python-version }}
+        python-version: ${{ env.PYTHON_VERSION }}
 
     - name: Install Poetry
       uses: snok/install-poetry@v1
@@ -87,7 +84,7 @@ jobs:
       uses: actions/cache@v3
       with:
         path: .venv
-        key: venv-${{ runner.os }}-${{ matrix.python-version }}-${{ hashFiles('**/poetry.lock') }}
+        key: venv-${{ runner.os }}-${{ env.PYTHON_VERSION }}-${{ hashFiles('**/poetry.lock') }}
 
     - name: Install dependencies
       if: steps.cached-poetry-dependencies.outputs.cache-hit != 'true'
@@ -110,7 +107,6 @@ jobs:
 
     - name: Upload coverage to Codecov
       uses: codecov/codecov-action@v3
-      if: matrix.python-version == '3.11'
       with:
         file: ./coverage.xml
         flags: unittests

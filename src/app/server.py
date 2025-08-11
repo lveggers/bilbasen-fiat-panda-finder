@@ -28,29 +28,30 @@ app = FastAPI(
 async def startup_event():
     """Initialize database and scrape fresh data on startup."""
     logger.info("Starting application initialization...")
-    
+
     # Create database tables
     create_db_and_tables()
     logger.info("Database tables created/verified")
-    
+
     # Check if we have recent data
     session = Session(engine)
     try:
         total_listings = ListingCRUD.count_listings(session)
         logger.info(f"Found {total_listings} existing listings in database")
-        
+
         # Always scrape fresh data on startup (you can modify this logic as needed)
         if total_listings == 0:
             logger.info("No listings found, starting initial scrape...")
         else:
             logger.info("Updating with fresh data...")
-        
+
         # Scrape fresh data
         listings = await scrape_bilbasen_listings(max_pages=1, use_json=True)
         logger.info(f"Scraped {len(listings)} listings")
-        
+
         # Store listings in database (they include scores from scraping)
         from .db import ListingCRUD
+
         for listing in listings:
             try:
                 ListingCRUD.create_listing(session, listing)
@@ -59,23 +60,24 @@ async def startup_event():
                 existing = ListingCRUD.get_listing_by_url(session, listing.url)
                 if existing:
                     # Update the existing listing
-                    for field, value in listing.model_dump(exclude={'id'}).items():
+                    for field, value in listing.model_dump(exclude={"id"}).items():
                         setattr(existing, field, value)
                     session.commit()
-                
+
         session.commit()
-        
+
         # Rescore all listings to ensure consistent scoring
         rescored_count = await rescore_all_listings(session)
         logger.info(f"Rescored {rescored_count} listings")
-        
+
         logger.info("Application initialization completed successfully")
-        
+
     except Exception as e:
         logger.error(f"Error during startup initialization: {e}")
         # Don't fail startup, but log the error
     finally:
         session.close()
+
 
 # Mount the API routes
 app.mount("/api/v1", api_app)
