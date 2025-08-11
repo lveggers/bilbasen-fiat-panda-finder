@@ -10,8 +10,19 @@ from typing import Generator, Dict, Any
 
 from src.app.db import get_session
 from src.app.server import app
+from src.app.api import app as api_app  # Import the API app too
 from src.app.models import Listing, ListingCreate
 from src.app.logging_conf import setup_logging
+from src.app.config import settings
+
+
+@pytest.fixture(scope="session", autouse=True)
+def setup_test_environment():
+    """Setup test environment by enabling testing mode."""
+    original_testing = settings.testing
+    settings.testing = True
+    yield
+    settings.testing = original_testing
 
 
 @pytest.fixture(scope="session")
@@ -48,19 +59,27 @@ def test_session(temp_db) -> Generator[Session, None, None]:
 
 
 @pytest.fixture
-def test_client(test_session) -> TestClient:
+def test_client(temp_db) -> TestClient:
     """Create a test client with dependency override."""
 
-    def get_test_session():
-        return test_session
+    # Create a test session
+    test_session = Session(temp_db)
 
+    # Override the database session dependency
+    def get_test_session():
+        yield test_session
+
+    # Override in both the main app and the API app
     app.dependency_overrides[get_session] = get_test_session
+    api_app.dependency_overrides[get_session] = get_test_session
 
     with TestClient(app) as client:
         yield client
 
     # Clean up
+    test_session.close()
     app.dependency_overrides.clear()
+    api_app.dependency_overrides.clear()
 
 
 @pytest.fixture

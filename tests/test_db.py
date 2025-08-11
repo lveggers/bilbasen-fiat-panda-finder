@@ -2,7 +2,7 @@
 
 import pytest
 from datetime import datetime, timedelta
-from sqlmodel import Session
+from sqlmodel import Session, text
 
 from src.app.db import ListingCRUD, create_db_and_tables
 from src.app.models import Listing, ListingCreate, ListingUpdate
@@ -20,7 +20,7 @@ class TestDatabaseSetup:
         # Check that tables exist by trying to query
         with Session(temp_db) as session:
             result = session.exec(
-                "SELECT name FROM sqlite_master WHERE type='table'"
+                text("SELECT name FROM sqlite_master WHERE type='table'")
             ).fetchall()
             table_names = [row[0] for row in result]
 

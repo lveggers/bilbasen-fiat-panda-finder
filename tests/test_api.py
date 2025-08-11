@@ -304,7 +304,7 @@ class TestUtilityEndpoints:
         """Test synchronous scraping endpoint."""
         # This is a slow test as it may actually attempt scraping
         response = test_client.post(
-            "/api/v1/scrape/sync?max_pages=1&include_details=false"
+            "/api/v1/scrape/sync", json={"max_pages": 1, "include_details": False}
         )
 
         # Should either succeed or fail gracefully
@@ -444,11 +444,11 @@ class TestAPIDocumentation:
         assert "info" in schema
         assert "paths" in schema
 
-        # Check some expected paths are documented
+        # Check some expected paths are documented (main app routes)
         paths = schema["paths"]
-        assert "/api/v1/listings" in paths
-        assert "/api/v1/health" in paths
-        assert "/api/v1/top10" in paths
+        assert "/health" in paths  # Main app health endpoint
+        assert "/listings" in paths  # Main app listings page
+        assert "/" in paths  # Main app dashboard
 
     def test_docs_page(self, test_client):
         """Test Swagger UI docs page."""

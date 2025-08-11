@@ -7,6 +7,7 @@ from .logging_conf import get_logger
 logger = get_logger("parse_condition")
 
 # Danish condition mappings to scores (0.0 to 1.0, higher is better)
+# Note: These use normalized text (Danish characters converted to ASCII)
 CONDITION_MAPPINGS = {
     # Excellent conditions (0.9 - 1.0)
     "nysynet": 1.0,
@@ -15,15 +16,15 @@ CONDITION_MAPPINGS = {
     "som ny": 0.95,
     "topstand": 0.95,
     "perfekt stand": 0.95,
-    "upåklagelig": 0.9,
+    "upaaklagelig": 0.9,
     "fremragende": 0.9,
     # Very good conditions (0.8 - 0.89)
     "nyserviceret": 0.85,
-    "meget pæn": 0.85,
-    "virkelig pæn": 0.85,
+    "meget paen": 0.85,
+    "virkelig paen": 0.85,
     "super flot": 0.85,
     "flot": 0.8,
-    "pæn": 0.8,
+    "paen": 0.8,
     "velholdt": 0.8,
     # Good conditions (0.6 - 0.79)
     "god stand": 0.75,
@@ -45,18 +46,18 @@ CONDITION_MAPPINGS = {
     "brugsport": 0.4,
     # Poor conditions (0.2 - 0.39)
     "slidte": 0.35,
-    "tærskel": 0.35,
+    "taerskel": 0.35,
     "slidt": 0.3,
     "mangler": 0.3,
     "skal repareres": 0.25,
-    "trænger til": 0.25,
-    "dårlig stand": 0.2,
-    "dårlig": 0.2,
+    "traenger til": 0.25,
+    "daarlig stand": 0.2,
+    "daarlig": 0.2,
     # Very poor conditions (0.0 - 0.19)
     "reparationsobjekt": 0.1,
     "til dele": 0.05,
     "defekt": 0.0,
-    "ødelagt": 0.0,
+    "oedelagt": 0.0,
     "havareret": 0.0,
     "skrotet": 0.0,
 }
@@ -76,10 +77,11 @@ NEGATIVE_MODIFIERS = {
     "noget": -0.05,
     "ret": -0.05,
     "temmelig": -0.1,
-    "meget": -0.1,  # Context-dependent, but often negative when combined with poor conditions
+    # Note: "meget" removed as it conflicts with POSITIVE_MODIFIERS
+    # Context will determine if it's positive or negative
 }
 
-# Common phrases that indicate specific issues
+# Common phrases that indicate specific issues (normalized)
 ISSUE_PHRASES = {
     "rust": -0.1,
     "buler": -0.05,
@@ -91,6 +93,10 @@ ISSUE_PHRASES = {
     "elektronik": -0.08,
     "aircon": -0.03,
     "aircondition": -0.03,
+    "slidt": -0.05,
+    "karosseri": 0.0,  # Neutral term, not an issue
+    "interior": -0.02,
+    "problemer": -0.1,
 }
 
 
