@@ -50,12 +50,10 @@ async def startup_event():
         logger.info(f"Scraped {len(listings)} listings")
 
         # Store listings in database (they include scores from scraping)
-        from .db import ListingCRUD
-
         for listing in listings:
             try:
                 ListingCRUD.create_listing(session, listing)
-            except Exception as e:
+            except Exception:
                 # Listing might already exist, try to update it
                 existing = ListingCRUD.get_listing_by_url(session, listing.url)
                 if existing:
