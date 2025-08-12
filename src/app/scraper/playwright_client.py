@@ -4,7 +4,6 @@ import asyncio
 import random
 import time
 from typing import Optional, List
-from pathlib import Path
 from contextlib import asynccontextmanager
 
 from playwright.async_api import (
