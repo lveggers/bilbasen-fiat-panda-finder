@@ -203,7 +203,7 @@ class BilbasenJSONExtractor:
         for listing_data in normalized_listings:
             try:
                 # Parse condition from description if available
-                condition_score = self._parse_condition_from_description(
+                condition_result = self._parse_condition_from_description(
                     listing_data.get("description", "")
                 )
 
@@ -213,8 +213,8 @@ class BilbasenJSONExtractor:
                     price_dkk=listing_data.get("price_dkk"),
                     year=listing_data.get("year"),
                     kilometers=listing_data.get("kilometers"),
-                    condition_str=None,  # Not directly available in JSON
-                    condition_score=condition_score,
+                    condition_str=condition_result["label"],
+                    condition_score=condition_result["score"],
                     brand=listing_data.get("brand"),
                     model=listing_data.get("model"),
                     fuel_type=listing_data.get("fuel_type"),
@@ -233,49 +233,73 @@ class BilbasenJSONExtractor:
         logger.info(f"Created {len(listing_models)} ListingCreate models")
         return listing_models
 
-    def _parse_condition_from_description(self, description: str) -> float:
+    def _parse_condition_from_description(self, description: str) -> dict:
         """
-        Parse condition score from description text.
+        Parse condition score and label from description text.
 
         Args:
             description: Listing description text
 
         Returns:
-            Condition score between 0.0 and 1.0
+            Dictionary with 'score' (0.0-1.0) and 'label' (string)
         """
         if not description:
-            return 0.5  # Default neutral score
+            return {"score": 0.5, "label": "Ukendt"}  # Default neutral score
 
         description_lower = description.lower()
 
-        # Good condition keywords
-        good_keywords = [
-            "velholdt",
-            "flot",
-            "pæn",
-            "god stand",
-            "topstand",
-            "nysynet",
-            "professionelt klargjort",
-            "klar til levering",
+        # Good condition keywords with their labels
+        good_keywords = {
+            "topstand": "Topstand",
+            "velholdt": "Velholdt",
+            "nysynet": "Nysynet",
+            "flot": "Flot stand",
+            "pæn": "Pæn stand",
+            "god stand": "God stand",
+            "professionelt klargjort": "Professionelt klargjort",
+            "klar til levering": "Klar til levering",
+        }
+
+        # Poor condition keywords with their labels
+        poor_keywords = {
+            "defekt": "Defekt",
+            "reparationsobjekt": "Reparationsobjekt",
+            "slidte": "Slidt",
+            "skader": "Skader",
+            "rust": "Rust",
+            "problemer": "Problemer",
+        }
+
+        # Find the best matching keywords
+        found_good = [
+            label
+            for keyword, label in good_keywords.items()
+            if keyword in description_lower
+        ]
+        found_poor = [
+            label
+            for keyword, label in poor_keywords.items()
+            if keyword in description_lower
         ]
 
-        # Poor condition keywords
-        poor_keywords = [
-            "slidte",
-            "defekt",
-            "reparationsobjekt",
-            "skader",
-            "rust",
-            "problemer",
-        ]
+        good_count = len(found_good)
+        poor_count = len(found_poor)
 
-        good_score = sum(1 for keyword in good_keywords if keyword in description_lower)
-        poor_score = sum(1 for keyword in poor_keywords if keyword in description_lower)
-
-        if good_score > poor_score:
-            return min(1.0, 0.5 + (good_score - poor_score) * 0.1)
-        elif poor_score > good_score:
-            return max(0.0, 0.5 - (poor_score - good_score) * 0.1)
+        # Determine score
+        if good_count > poor_count:
+            score = min(1.0, 0.5 + (good_count - poor_count) * 0.1)
+            label = found_good[0]  # Use the first good keyword found
+        elif poor_count > good_count:
+            score = max(0.0, 0.5 - (poor_count - good_count) * 0.1)
+            label = found_poor[0]  # Use the first poor keyword found
         else:
-            return 0.5
+            score = 0.5
+            # If both good and poor found, use the first one, otherwise default
+            if found_good:
+                label = found_good[0]
+            elif found_poor:
+                label = found_poor[0]
+            else:
+                label = "Almindelig"  # Standard condition if no keywords found
+
+        return {"score": score, "label": label}

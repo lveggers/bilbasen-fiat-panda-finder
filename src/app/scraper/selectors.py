@@ -1,6 +1,5 @@
 """CSS and XPath selectors for Bilbasen.dk scraping."""
 
-
 # CSS selectors for different page elements
 SELECTORS = {
     # Search results page
