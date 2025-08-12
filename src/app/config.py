@@ -1,6 +1,7 @@
 """Configuration module for the Bilbasen Fiat Panda Finder."""
 
 from typing import Dict, Any
+from pathlib import Path
 from pydantic import Field
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
@@ -49,7 +50,28 @@ class Settings(BaseSettings):
 
     # Database
     database_url: str = Field(
-        default="sqlite:///./listings.db", description="Database connection URL"
+        default="sqlite:///./runtime/data/listings.db",
+        description="Database connection URL",
+    )
+
+    # Runtime directories
+    runtime_dir: str = Field(
+        default="./runtime", description="Base runtime directory for generated files"
+    )
+    data_dir: str = Field(
+        default="./runtime/data", description="Directory for database and data files"
+    )
+    fixtures_dir: str = Field(
+        default="./runtime/fixtures", description="Directory for scraped HTML fixtures"
+    )
+    logs_dir: str = Field(
+        default="./runtime/logs", description="Directory for log files"
+    )
+    cache_dir: str = Field(
+        default="./runtime/cache", description="Directory for cache files"
+    )
+    temp_dir: str = Field(
+        default="./runtime/temp", description="Directory for temporary files"
     )
 
     # Scoring weights (must sum to 1.0)
@@ -107,9 +129,32 @@ class Settings(BaseSettings):
         if not (0.99 <= total_weight <= 1.01):
             raise ValueError(f"Scoring weights must sum to 1.0, got {total_weight}")
 
+    def ensure_runtime_directories(self) -> None:
+        """Ensure all runtime directories exist."""
+        dirs_to_create = [
+            self.runtime_dir,
+            self.data_dir,
+            self.fixtures_dir,
+            self.logs_dir,
+            self.cache_dir,
+            self.temp_dir,
+        ]
+
+        for dir_path in dirs_to_create:
+            Path(dir_path).mkdir(parents=True, exist_ok=True)
+
+    def get_fixtures_path(self) -> Path:
+        """Get the fixtures directory as a Path object."""
+        return Path(self.fixtures_dir)
+
+    def get_logs_path(self) -> Path:
+        """Get the logs directory as a Path object."""
+        return Path(self.logs_dir)
+
     def model_post_init(self, __context: Any) -> None:
         """Validate settings after initialization."""
         self.validate_scoring_weights()
+        self.ensure_runtime_directories()
 
 
 # Global settings instance

@@ -1,0 +1,27 @@
+# Production dependencies for Bilbasen Fiat Panda Finder
+# Generated from pyproject.toml for deployment compatibility
+
+# Core web framework and server
+fastapi>=0.104.0
+uvicorn[standard]>=0.24.0
+python-multipart>=0.0.6
+
+# Templating and UI
+jinja2>=3.1.0
+plotly>=5.17.0
+
+# Database and models
+sqlmodel>=0.0.14
+
+# Web scraping
+playwright>=1.40.0
+selectolax>=0.3.0
+httpx>=0.25.0
+
+# Data processing
+pandas>=2.1.0
+scipy>=1.16.1,<2.0.0
+
+# Configuration and utilities
+python-dotenv>=1.0.0
+pydantic-settings>=2.0.0
