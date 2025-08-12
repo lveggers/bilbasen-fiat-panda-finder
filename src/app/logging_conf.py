@@ -93,7 +93,7 @@ def get_logging_config() -> Dict[str, Any]:
                 "class": "logging.handlers.RotatingFileHandler",
                 "level": settings.log_level,
                 "formatter": "default",
-                "filename": "app.log",
+                "filename": str(settings.get_logs_path() / "app.log"),
                 "maxBytes": 10485760,  # 10MB
                 "backupCount": 5,
                 "encoding": "utf-8",

@@ -81,8 +81,40 @@ ENV/
 env/
 .venv/
 
-# Debug folder
+# Debug folder and temporary test files
 debug/
+debug_*.py
+test_*.py
+simple_*.py
 
-# Fixtures (optional - keep for tests)
-# src/app/scraper/fixtures/*.html
+# Runtime artifacts and fixtures
+src/app/scraper/fixtures/*.html
+*.db-journal
+runtime/
+temp/
+tmp/
+
+# Claude Code specific files
+.claude/
+
+# Windows specific files (causing git corruption)
+desktop.ini
+Desktop.ini
+[Tt]humbs.db
+[Dd]esktop.ini
+
+# Application runtime data
+data/
+output/
+scraper_output/
+listings_data/
+
+# Temporary files and backups
+*.tmp
+*.bak
+*.orig
+*~
+
+# Editor temporary files
+.*.swp
+.*.swo

@@ -59,8 +59,7 @@ class PlaywrightClient:
         self.rate_limiter = RateLimiter(
             settings.request_delay_min, settings.request_delay_max
         )
-        self.fixtures_dir = Path(__file__).parent / "fixtures"
-        self.fixtures_dir.mkdir(exist_ok=True)
+        self.fixtures_dir = settings.get_fixtures_path()
 
     async def __aenter__(self):
         """Async context manager entry."""
