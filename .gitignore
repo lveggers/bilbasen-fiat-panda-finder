@@ -99,6 +99,8 @@ tmp/
 
 # Windows specific files (causing git corruption)
 desktop.ini
+**/desktop.ini
+desktop.ini
 Desktop.ini
 [Tt]humbs.db
 [Dd]esktop.ini
