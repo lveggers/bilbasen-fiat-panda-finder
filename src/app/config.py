@@ -50,7 +50,8 @@ class Settings(BaseSettings):
 
     # Database
     database_url: str = Field(
-        default="sqlite:///./runtime/data/listings.db", description="Database connection URL"
+        default="sqlite:///./runtime/data/listings.db",
+        description="Database connection URL",
     )
 
     # Runtime directories
@@ -138,7 +139,7 @@ class Settings(BaseSettings):
             self.cache_dir,
             self.temp_dir,
         ]
-        
+
         for dir_path in dirs_to_create:
             Path(dir_path).mkdir(parents=True, exist_ok=True)
 
