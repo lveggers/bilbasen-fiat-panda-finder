@@ -294,7 +294,6 @@ class BilbasenScraper:
                         )
 
                         # Check for duplicate listings to detect end of results
-                        current_urls = {listing.url for listing in listing_models}
                         all_urls = {listing.url for listing in all_listings}
 
                         # If we got no new listings, we've reached the end
