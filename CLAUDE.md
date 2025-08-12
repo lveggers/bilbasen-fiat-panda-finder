@@ -103,7 +103,19 @@ Brief description of what this PR implements.
 ### 4. Review Process
 
 1. **Create Pull Request**: After pushing changes, create PR with detailed description
-2. **Demo Application**: **CRITICAL** - Before approval, always spin up the application for live review
+2. **Wait for CI Pipeline**: **CRITICAL** - Always wait for all CI checks to pass before approval
+   ```bash
+   # Monitor CI pipeline status
+   gh pr checks <PR_NUMBER>
+   
+   # Common CI checks that must pass:
+   # - Code Quality (linting, formatting)
+   # - Test Suite (unit tests, integration tests)
+   # - Build verification
+   
+   # Do NOT approve or merge until all checks show "✓ passed"
+   ```
+3. **Demo Application**: **CRITICAL** - After CI passes, spin up the application for live review
    ```bash
    # Start the application server
    poetry run uvicorn src.app.server:app --host 127.0.0.1 --port 8001
@@ -114,9 +126,9 @@ Brief description of what this PR implements.
    # Provide access URL for review
    echo "Application ready at: http://127.0.0.1:8001"
    ```
-3. **Wait for Review**: Stop work and wait for approval after demonstrating functionality
-4. **Address Feedback**: Make requested changes in the same feature branch if needed
-5. **Merge After Approval**: Only continue after PR is approved and merged
+4. **Wait for Review**: Stop work and wait for approval after CI passes and demonstrating functionality
+5. **Address Feedback**: Make requested changes in the same feature branch if needed
+6. **Merge After Approval**: Only continue after PR is approved, CI passes, and merged
 
 ### 5. Post-Merge Cleanup
 

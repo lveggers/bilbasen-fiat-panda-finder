@@ -292,14 +292,35 @@ class BilbasenScraper:
                         listing_models = self.json_extractor.create_listing_models(
                             normalized_listings
                         )
-                        all_listings.extend(listing_models)
 
-                        # Check if there are more pages by looking for next page button
-                        next_page_link = await page.query_selector(
-                            get_selector("search", "pagination_next")
+                        # Check for duplicate listings to detect end of results
+                        all_urls = {listing.url for listing in all_listings}
+
+                        # If we got no new listings, we've reached the end
+                        new_listings = [
+                            listing
+                            for listing in listing_models
+                            if listing.url not in all_urls
+                        ]
+
+                        if not new_listings:
+                            logger.info(
+                                f"No new listings found on page {page_num}, stopping"
+                            )
+                            break
+
+                        logger.info(
+                            f"Found {len(new_listings)} new listings on page {page_num}"
                         )
-                        if not next_page_link:
-                            logger.info(f"No more pages after page {page_num}")
+                        all_listings.extend(new_listings)
+
+                        # If we got fewer than expected listings, likely end of results
+                        if (
+                            len(normalized_listings) < 20
+                        ):  # Bilbasen typically shows 30 per page
+                            logger.info(
+                                f"Page {page_num} has fewer listings ({len(normalized_listings)}), likely last page"
+                            )
                             break
 
                     finally:

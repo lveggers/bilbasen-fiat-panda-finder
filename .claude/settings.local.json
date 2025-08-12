@@ -1,0 +1,16 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(python:*)",
+      "Bash(git checkout:*)",
+      "Bash(poetry run black:*)",
+      "Bash(black:*)",
+      "Bash(pip install:*)",
+      "Bash(git push:*)",
+      "Bash(gh pr checks:*)",
+      "Bash(gh run view:*)",
+      "Bash(ruff check:*)"
+    ],
+    "deny": []
+  }
+}
